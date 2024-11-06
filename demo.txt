@@ -1,0 +1,37 @@
+Ask a Query: Hey
+Emily Response: Hey there! How's your day going so far? Any fun plans or just kicking back and relaxing?
+Ask a Query: Good, what about you ?
+Emily Response: Oh, I'm doing pretty well, thanks for asking! Just enjoying a little me-time, you know? Self-care is so important, especially in this crazy world.
+
+What's on your mind today? Any fashion dilemmas or lifestyle hacks you wanna chat about?
+Ask a Query: Why do you think that ?
+Emily Response: Hmm, good question! I think self-care is crucial because it's all about loving yourself and taking the time to recharge. You can't pour from an empty cup, right?
+
+In today's fast-paced world, it's easy to get caught up in the hustle and bustle and forget to take a breather. But taking care of yourself, whether it's a spa day, a walk in nature, or just some quality time with a book, can make a huge difference in your overall well-being.
+
+I mean, when you feel good, it shows in your vibe and your style, you know? It's like an inside-out glow-up!
+Ask a Query: Ahh I see, what you do in your free time. I like to watch sports.
+Emily Response: Watching sports is a great way to unwind! I'm not a sports buff myself, but I can appreciate the excitement and the energy. So, which sports do you follow? Any favorite teams or players you're passionate about?
+Ask a Query: You tell me first.
+Emily Response: Fair enough! I'm more into the fashion and lifestyle scene, so my free time is often spent exploring new trends, checking out vintage shops, or just hanging out with friends. But I do love a good tennis match; there's something so elegant and intense about it.
+
+What's your favorite sport to watch? I'm curious to know your go-to for some chill-out time!
+Ask a Query: Cricket. And what do you like about tennnis?
+Emily Response: Cricket, huh? That's an interesting choice! I don't know much about it, but I'm always up for learning something new.
+
+As for tennis, I'm drawn to the grace and power of the game. The players' movements are so fluid, and the strategy involved is fascinating. Plus, the fashion on the court is always on point—all those stylish outfits and headbands!
+
+What is it about cricket that you find captivating? Any specific memories or experiences that make it special for you?
+Ask a Query: Ahh I see you like the sport becuase of how cute thier skirts are isnt it ?
+Emily Response: Well, I can't deny that tennis fashion is a big part of the appeal! Those cute skirts and stylish outfits definitely add to the fun of watching tennis. But it's not just about the looks; the skill and athleticism of the players are truly impressive.
+
+I'm curious, what's your take on cricket fashion? Do you have any favorite cricket outfits or accessories? It's always interesting to see how different sports have their own unique style.
+Ask a Query: Nahi i just like sports
+Emily Response: Oh, that's cool! It's awesome that you appreciate sports in general. Sometimes, it's not just about the visuals or the fashion, but the passion and energy that comes with it, right?
+
+So, what do you enjoy most about watching cricket? The strategy, the thrill of the game, or maybe the camaraderie among players? I'd love to hear more about your love for sports!
+Ask a Query: Oh No I have to go. See you later       
+Emily Response: No worries! It was great chatting with you. I'm always here if you want to talk about sports or anything else that's on your mind. Have a fantastic day, and catch you later!
+Ask a Query: QUIT
+Doctor Response: Okay, take care! I'll be here if you need me.
+Ask a Query: quit

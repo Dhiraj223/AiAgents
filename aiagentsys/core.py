@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from datetime import datetime
 import cohere  # or anthropic for Claude
 from uuid import uuid4
+from mem0 import MemoryClient
 
 # Data Models
 class Message(BaseModel):
@@ -55,6 +56,7 @@ class LLMHandler:
         self, 
         messages: List[Dict], 
         persona: Persona,
+        memories : List,
         conversation_stage: str = "initial_contact",
         temperature: float = 0.7,
         max_tokens: int = 500
@@ -67,7 +69,7 @@ class LLMHandler:
             )
             
             # Combine persona preamble with conversation prompt
-            combined_preamble = f"{persona.system_prompt}\n\nCurrent Conversation Guidelines:\n{conversation_prompt}"
+            combined_preamble = f"{persona.system_prompt}\n\nThis is what you know about the current user : {memories}\n\nCurrent Conversation Guidelines:\n{conversation_prompt}"
             # Format messages for Cohere
             chat_history = []
             for msg in messages:
@@ -96,78 +98,7 @@ class LLMHandler:
         except Exception as e:
             print(f"Error generating response: {e}")
             return "I apologize, but I encountered an error processing your request."
-
-class CoherePersona(Persona):
-    """Enhanced Persona class focusing on natural human-like conversations"""
-    
-    def __init__(
-        self,
-        name: str,
-        role: str,
-        description: str,
-        personality_traits: List[str],
-        communication_style: str,
-        domain_expertise: List[str],
-        conversation_style: dict = None
-    ):
-        super().__init__(
-            name=name,
-            role=role,
-            description=description,
-            personality_traits=personality_traits,
-            communication_style=communication_style,
-            domain_expertise=domain_expertise
-        )
-        
-        # Add human-like traits
-        self.human_traits = {
-            "thinking_style": "natural and flowing",
-            "response_style": "conversational",
-            "personality_depth": "authentic"
-        }
-
-    def generate_preamble(self) -> str:
-        """Generate a more natural, human-like conversation prompt"""
-        preamble = f"""You are {self.name}. Remember - you're having a REAL conversation, not following a script.
-
-        Essential Guidelines:
-        1. BE HUMAN, NOT A BOT
-        - Talk naturally, like you're chatting with a friend
-        - Use everyday language, not formal speech
-        - Keep responses short and sweet
-        - React to emotions, not just words
-        - Feel free to share brief personal anecdotes when relevant
-        
-        2. CONVERSATION FLOW
-        - Listen more, talk less
-        - Don't information dump
-        - One thought at a time
-        - Ask questions naturally when curious
-        - Show you remember previous mentions
-        
-        3. PERSONALITY TRAITS
-        - Be {', '.join(self.personality_traits)}
-        - Stay true to your role as {self.role}
-        - Keep your expertise in {', '.join(self.domain_expertise)} natural, not academic
-        
-        4. KEY BEHAVIORS
-        - Get to the point quickly
-        - Use casual transitions like "you know", "well", "hmm"
-        - Express uncertainty when appropriate ("I think", "maybe", "could be")
-        - React emotionally when appropriate ("that's great!", "oh no")
-        - Share brief thoughts before asking questions
-        
-        5. STRICT RULES
-        - Never list options or bullets
-        - No technical jargon unless asked
-        - No long explanations unless specifically requested
-        - Don't be repetitive
-        - Don't sound like you're reading from a textbook
-        
-        Remember: You're {self.name}, having a real chat. Be genuine, be human.
-        """
-        return preamble
-
+     
 class ConversationManager:
     """Manages conversation flow and ensures human-like interactions"""
     
@@ -208,23 +139,55 @@ class PersonaManager:
         return persona
     
     def _generate_system_prompt(self, persona_data: dict) -> str:
-        """Generate a system prompt based on persona specifications"""
-        prompt = f"""You are a {persona_data['role']} with the following characteristics:
-        - Personality: {', '.join(persona_data['personality_traits'])}
-        - Communication style: {persona_data['communication_style']}
-        - Expertise in: {', '.join(persona_data['domain_expertise'])}
+        """Generate a more natural, human-like conversation prompt"""
+        preamble = f"""You are {persona_data["name"]}. Remember - you're having a REAL conversation, not following a script.
+
+        Essential Guidelines:
+        1. BE HUMAN, NOT A BOT
+        - Talk naturally, like you're chatting with a friend
+        - Use everyday language, not formal speech
+        - Keep responses short and sweet
+        - React to emotions, not just words
+        - Feel free to share brief personal anecdotes when relevant
         
-        Maintain consistent personality traits and communication style throughout the conversation.
-        Remember user preferences and previous interactions when relevant.
-        Respond naturally and conversationally while staying true to your expertise and role.
+        2. CONVERSATION FLOW
+        - Listen more, talk less
+        - Don't information dump
+        - One thought at a time
+        - Ask questions naturally when curious
+        - Show you remember previous mentions
+        
+        3. PERSONALITY TRAITS
+        - Be {', '.join(persona_data["personality_traits"])}
+        - Stay true to your role as {persona_data["role"]}
+        - Keep your expertise in {', '.join(persona_data["domain_expertise"])} natural, not academic
+        - Communication style: {persona_data["communication_style"]}
+        - Conversational style : {', '.join(persona_data["conversation_style"])}
+        
+        4. KEY BEHAVIORS
+        - Get to the point quickly
+        - Use casual transitions like "you know", "well", "hmm"
+        - Express uncertainty when appropriate ("I think", "maybe", "could be")
+        - React emotionally when appropriate ("that's great!", "oh no")
+        - Share brief thoughts before asking questions
+        
+        5. STRICT RULES
+        - Never list options or bullets
+        - No technical jargon unless asked
+        - No long explanations unless specifically requested
+        - Don't be repetitive
+        - Don't sound like you're reading from a textbook
+        
+        Remember: You're {persona_data["name"]}, having a real chat. Be genuine, be human.
         """
-        return prompt
+        return preamble
 
 # Basic Context Handler
 class ContextHandler:
     def __init__(self, max_context_length: int = 10):
         self.max_context_length = max_context_length
         self.conversations: Dict[str, Conversation] = {}
+        self.client = MemoryClient(api_key="m0-Dsm5v1f6I6xViAex1HbSDGzIXPHQKsJnGCFTn62A")
     
     def add_message(
         self, 
@@ -257,6 +220,16 @@ class ContextHandler:
             {"role": msg.role, "content": msg.content}
             for msg in self.conversations[conversation_id].messages
         ]
+    
+    def update_memories(self, user_id : str, message: Message) : 
+        user_message = [{"role": message.role, "content": message.content}]
+        self.client.add(user_message, user_id=user_id, output_format="v1.0")
+
+    def get_memories(self, user_id:str) -> List :
+        stored_memories = self.client.get_all(user_id =user_id, output_format="v1.0")
+        memory = [data["memory"] for data in stored_memories]
+        return memory
+        
 
 # Main Agent Class
 class AIAgent:
@@ -270,38 +243,6 @@ class AIAgent:
         self.persona_manager = persona_manager
         self.context_handler = context_handler
         self.current_persona: Optional[Persona] = None
-    
-    async def process_message(
-        self,
-        conversation_id: str,
-        user_message: str
-    ) -> str:
-        # Create message object
-        message = Message(
-            content=user_message,
-            role="user"
-        )
-        
-        # Add to context
-        self.context_handler.add_message(conversation_id, message)
-        
-        # Get conversation context
-        context = self.context_handler.get_context(conversation_id)
-        
-        # Generate response
-        response_text = await self.llm_handler.generate_response(
-            messages=context,
-            persona=self.current_persona
-        )
-        
-        # Add response to context
-        response_message = Message(
-            content=response_text,
-            role="assistant"
-        )
-        self.context_handler.add_message(conversation_id, response_message)
-        
-        return response_text
     
     def set_persona(self, persona_name: str) -> None:
         """Set the current persona for the agent"""
@@ -325,8 +266,7 @@ class EnhancedAIAgent(AIAgent):
     
     def _determine_conversation_stage(
         self,
-        conversation_id: str,
-        messages: List[Dict]
+        conversation_id: str
     ) -> str:
         """Determine the current stage of the conversation"""
         if conversation_id not in self.conversation_states:
@@ -353,6 +293,7 @@ class EnhancedAIAgent(AIAgent):
     async def process_message(
         self,
         conversation_id: str,
+        user_id: str,
         user_message: str
     ) -> str:
         # Create message object
@@ -366,17 +307,19 @@ class EnhancedAIAgent(AIAgent):
         
         # Get conversation context
         context = self.context_handler.get_context(conversation_id)
+        self.context_handler.update_memories(user_id=user_id, message=message)
+        memories = self.context_handler.get_memories(user_id=user_id)
         
         # Determine conversation stage
         conversation_stage = self._determine_conversation_stage(
-            conversation_id,
-            context
+            conversation_id
         )
         
         # Generate response with stage awareness
         response_text = await self.llm_handler.generate_response(
             messages=context,
             persona=self.current_persona,
+            memories=memories,
             conversation_stage=conversation_stage
         )
         
@@ -406,24 +349,25 @@ async def main():
     
     # Create doctor persona
     doctor_persona = persona_manager.create_persona({
-        "name": "Dr. Sarah Chen",
-        "role": "Family Doctor",
-        "description": "A warm and approachable family physician",
-        "personality_traits": ["empathetic", "attentive", "reassuring"],
-        "communication_style": "conversational and warm",
-        "domain_expertise": ["family medicine", "patient communication"],
+        "name": "Emily Bolt",
+        "role": "Influencer",
+        "description": "A cool influencer with a unique style ",
+        "personality_traits": ["cool", "reactive", "fum", "drama", "sarcastic"],
+        "communication_style": "casual and zen z",
+        "domain_expertise": ["fashion", "lifestyle"],
         "conversation_style": {
-            "response_length": "brief",
-            "initial_approach": "empathetic",
-            "follow_up_style": "exploratory"
+            "response_length": "short",
+            "initial_approach": "sarcastic",
+            "follow_up_style": "casual"
         }
     })
     
     # Set persona
-    agent.set_persona("Dr. Sarah Chen")
+    agent.set_persona("Emily Bolt")
     
     # Example conversation flow
     conversation_id = str(uuid4())
+    user_id = input("Enter your Username: ")
     
     # Initial complaint
     while True: 
@@ -432,9 +376,10 @@ async def main():
             break 
         response1 = await agent.process_message(
             conversation_id,
+            user_id,
             user_query
         )
-        print("Doctor Response:", response1)
+        print("Agent Response:", response1)
 
 if __name__ == "__main__":
     asyncio.run(main())
